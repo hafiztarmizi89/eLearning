@@ -1,0 +1,25 @@
+{
+  "name": "kiki-belajar",
+  "version": "2.0.0",
+  "description": "Kiki Belajar - Pra-Sekolah dan Sekolah Rendah",
+  "main": "main.js",
+  "author": "Kiki Belajar",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish never"
+  },
+  "build": {
+    "appId": "my.kikibelajar.app",
+    "productName": "Kiki Belajar",
+    "files": ["main.js", "index.html"],
+    "win": { "target": ["nsis"] },
+    "mac": {
+      "category": "public.app-category.education",
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }]
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}

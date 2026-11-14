@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ms"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kiki Belajar</title>
+<style>
+:root{--bg:#f4f1ea;--card:#fff;--ink:#3b3a4a;--mut:#7a7890;--a:#a9c8e8;--b:#f2b5a7;--c:#b4dcc3;--d:#f6e3a8;--ok:#6fbf87;--line:#ddd8cc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#26262f;--card:#33333f;--ink:#f0eee8;--mut:#b5b3c4;--line:#474757}}
+:root[data-theme="dark"]{--bg:#26262f;--card:#33333f;--ink:#f0eee8;--mut:#b5b3c4;--line:#474757}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Trebuchet MS','Comic Sans MS',system-ui,sans-serif;text-align:center}
+#app{max-width:720px;margin:auto;padding:14px}
+.btn{font:inherit;font-size:22px;padding:14px 22px;border:0;border-radius:22px;background:var(--a);color:#2b2f45;margin:6px;cursor:pointer}
+.btn.alt{background:var(--d)}.btn.sm{font-size:16px;padding:8px 14px}.btn.done{background:var(--c)}.btn:disabled{opacity:.5}
+.opt{font-size:40px;min-width:96px}.no{background:var(--b);animation:sh .3s}.hint{outline:5px solid var(--ok)}
+@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.card{background:var(--card);border-radius:22px;padding:16px;margin:12px 0}
+input{width:100%;box-sizing:border-box;padding:12px;font:inherit;font-size:18px;margin:6px 0;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
+.er{color:#c0504d;min-height:1.3em}.pg{color:var(--mut)}.prompt{font-size:28px;margin:12px 0}
+.word{font-size:64px;font-weight:700;letter-spacing:4px}.big{font-size:90px}.em{font-size:36px;line-height:1.3;word-break:break-all}
+.sw{display:inline-block;width:64px;height:64px;vertical-align:middle}
+.row,.grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.kiki{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0}.bub{background:var(--card);border-radius:18px;padding:10px 16px;font-size:20px}
+.chip{font-size:48px;touch-action:none;cursor:grab;background:var(--card);border-radius:16px;padding:8px;position:relative;user-select:none}
+.slot{min-width:120px;min-height:76px;border:3px dashed var(--mut);border-radius:16px;padding:8px;font-size:22px;display:flex;align-items:center;justify-content:center;gap:6px}
+.slot.ok{border-style:solid;border-color:var(--ok)}
+#cv{width:100%;max-width:300px;touch-action:none;background:var(--card);border-radius:20px}
+.bl{min-width:64px;min-height:80px;font-size:44px;font-weight:700;border:3px dashed var(--mut);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;margin:0 3px;vertical-align:middle;cursor:pointer}.bl.f{border-style:solid;border-color:var(--ok)}.bl.x{border-color:#c0504d}.lt{font-size:44px;font-weight:700;display:inline-block;margin:0 3px}#bar{margin-bottom:6px}
+@keyframes bn{50%{transform:translateY(-10px)}}
+@media print{#bar,button{display:none}}
+</style></head><body>
+<div id="app"></div>
+<div id="bar" style="text-align:center" hidden><button id="bk" class="btn alt sm" onclick="endSess(0);lvl(LV)">⬅ Keluar</button> <b id="tm">⏱ 00:00</b> <button class="btn sm" onclick="renew()">🔄 Tukar Soalan</button><span id="nt" class="pg"></span></div>
+<script>
+const $=s=>document.querySelector(s),A=$('#app');
+const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a,SH=a=>[...a].sort(()=>Math.random()-.5),P=a=>a[R(0,a.length-1)];
+let DB={users:{}},U=null,LV=0,CUR={};
+try{DB=JSON.parse(localStorage.getItem('kiki'))||DB}catch(e){}
+const save=()=>{try{localStorage.setItem('kiki',JSON.stringify(DB))}catch(e){}};
+const say=t=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ms-MY';u.rate=.8;u.pitch=1.3;speechSynthesis.speak(u)}catch(e){}};
+const bk=v=>$('#bar').hidden=!v;
+const OK=['Pandai, @!','Betul! Hebat, @!','Bagus, @!'];
+let TI=null,T0=0,SN='',SC={c:0,n:0};
+const fm=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+function endSess(f){if(!TI)return;clearInterval(TI);TI=null;const d=Math.round((Date.now()-T0)/1000);U.l=(U.l||[]).concat({n:SN,d,f:f?1:0,sc:SC.n?SC.c+'/'+SC.n:''}).slice(-30);save()}
+const KS='<svg viewBox="0 0 100 100" width="84" height="84"><ellipse cx="36" cy="26" rx="9" ry="22" fill="#f3efe9" stroke="#cfc8bd"/><ellipse cx="64" cy="26" rx="9" ry="22" fill="#f3efe9" stroke="#cfc8bd"/><ellipse cx="36" cy="28" rx="4" ry="14" fill="#f5b9c4"/><ellipse cx="64" cy="28" rx="4" ry="14" fill="#f5b9c4"/><circle cx="50" cy="64" r="30" fill="#f3efe9" stroke="#cfc8bd"/><circle cx="40" cy="60" r="4" fill="#3b3a4a"/><circle cx="60" cy="60" r="4" fill="#3b3a4a"/><ellipse cx="50" cy="70" rx="4" ry="3" fill="#f5b9c4"/><path d="M44 76q6 5 12 0" stroke="#3b3a4a" fill="none" stroke-width="2" stroke-linecap="round"/><circle cx="32" cy="70" r="5" fill="#f9d3d9" opacity=".7"/><circle cx="68" cy="70" r="5" fill="#f9d3d9" opacity=".7"/></svg>';
+const kiki=m=>`<div class="kiki">${KS}<div class="bub">${m}</div></div>`;
+const LI=['Tahap 0 · 1–2 tahun','Tahap 1 · 3–4 tahun','Tahap 2 · 4–5 tahun','Tahap 3 · 5–6 tahun'];
+const TP=[{id:'huruf',n:'Huruf',e:'🔤'},{id:'baca',n:'Membaca',e:'📖'},{id:'tulis',n:'Menulis',e:'✏️'},{id:'eja',n:'Ejaan',e:'🧩'},{id:'kira',n:'Mengira',e:'🔢'},{id:'objek',n:'Objek, Warna & Bentuk',e:'🎨'}];
+const NS=i=>i?4:3;
+// data
+const OB=[['🐱','kucing'],['🐘','gajah'],['🐰','arnab'],['🍎','epal'],['🍌','pisang'],['🚲','basikal'],['🚗','kereta'],['🐟','ikan'],['⚽','bola'],['📖','buku'],['🌸','bunga'],['☀️','matahari'],['🐔','ayam'],['🏠','rumah']];
+const CL=[['#e57373','merah'],['#6fa8dc','biru'],['#81c784','hijau'],['#f6d365','kuning'],['#ffb74d','oren'],['#ba68c8','ungu']].map(([c,n])=>[`<span class="sw" style="background:${c};width:88px;height:44px;border-radius:12px"></span>`,n]);
+const SP=[['border-radius:50%','bulat'],['','segi empat'],['clip-path:polygon(50% 0,100% 100%,0 100%)','segi tiga'],['clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)','bintang']].map(([s,n])=>[`<span class="sw" style="background:#7aa6d6;${s}"></span>`,n]);
+const W=s=>s.split(',').map(x=>{const[a,e]=x.split(' ');return[a.split('-'),e]});
+const WP=[[],W('bo-la ⚽,bu-ku 📖,i-kan 🐟,a-yam 🐔,e-pal 🍎,su-su 🥛,ma-ta 👁️,to-pi 🧢'),W('ku-cing 🐱,ga-jah 🐘,bu-nga 🌸,pi-sang 🍌,ar-nab 🐰,ru-mah 🏠,ka-sut 👟,ba-ju 👕'),[...W('ba-si-kal 🚲,ke-re-ta 🚗,ma-ta-ha-ri ☀️,pe-lan-gi 🌈,be-lon 🎈,ka-pal 🚢'),[['Ibu','masak','nasi'],'🍚',1],[['Adik','makan','epal'],'🍎',1],[['Kucing','minum','susu'],'🐱',1]]];
+const LP=['AEIOU','ABCDEFGHIJKLM','NOPQRSTUVWXYZ'],ALL='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const TW=['A B C D E 1 2 3 4 5','F G H I J 6 7 8 9 10','a b d g m n s t 11 12 13 14 15'].map(s=>s.split(' '));
+const EM=['🍎','🍌','⭐','🐟','⚽'];
+const nums=a=>{const s=new Set([a]);[1,-1,2,10,-2,3].forEach(d=>{if(s.size<4&&a+d>=0)s.add(a+d)});return SH([...s])};
+const GEN={
+huruf:()=>SH(LP[LV-1].split('')).slice(0,4).map(L=>({t:'mcq',i:'Huruf '+L,s:'Huruf '+L,h:()=>'🔊 Dengar, pilih huruf yang betul',o:SH([L,...SH(ALL.filter(x=>x!=L)).slice(0,3)]).map(x=>x+x.toLowerCase()),a:[L+L.toLowerCase()]})),
+baca:()=>SH(WP[LV]).slice(0,4).map(w=>{const j=w[0].join(w[2]?' ':'');return{t:'baca',c:w[0],e:w[1],sent:w[2],s:j,i:j}}),
+tulis:()=>SH(TW[LV-1]).slice(0,4).map(x=>({t:'tulis',l:x,i:'Tulis '+x})),
+eja:()=>SH(WP[LV].filter(w=>!w[2])).slice(0,4).map(w=>{const Wd=w[0].join('').toUpperCase(),nb=LV>1?2:1,pos=SH([...Wd].map((_,j)=>j)).slice(0,nb).sort((a,b)=>a-b),ans=pos.map(j=>Wd[j]),st=new Set(ans);SH(ALL).forEach(c=>{if(st.size<5)st.add(c)});
+ return{t:'mcq',i:Wd,s:'Eja '+w[0].join(''),a:ans,o:SH([...st]),h:k=>`<div class="big">${w[1]}</div><div class="word">${[...Wd].map((c,j)=>{const b=pos.indexOf(j);return b<0||b<k?c:'_'}).join(' ')}</div>`}}),
+kira:()=>[0,1,2,3].map(j=>{const e=P(EM);let h,a,s;
+ if(LV==1){if(j%2){a=R(1,10);h=`<div class="em">${e.repeat(a)}</div>Berapa semuanya?`;s='Kira, berapa semuanya?'}else{const x=R(1,3),y=R(1,5-x);a=x+y;h=`<div class="em">${e.repeat(x)} + ${e.repeat(y)}</div>= ?`;s='Berapa semuanya?'}}
+ else if(LV==2){if(j%2){a=R(11,20);h=`<div class="em">${e.repeat(a)}</div>Berapa semuanya?`;s='Kira, berapa semuanya?'}else{const x=R(5,15),y=R(1,20-x);if(j==2){a=x+y;h=`${x} + ${y} = ?`;s=`${x} tambah ${y} sama dengan berapa`}else{a=x;h=`${x+y} − ${y} = ?`;s=`${x+y} tolak ${y} sama dengan berapa`}}}
+ else{const x=R(100,600),y=R(10,300);if(j%2){a=x+y;h=`${x} + ${y} = ?`;s=`${x} tambah ${y} sama dengan berapa`}else{a=x;h=`${x+y} − ${y} = ?`;s=`${x+y} tolak ${y} sama dengan berapa`}}
+ return{t:'mcq',i:LV==3?'Tambah/tolak 3 digit':'Nombor '+a,s,h:()=>h,o:nums(a).map(String),a:[String(a)]}}),
+objek:()=>[0,1,2,3].map(j=>{
+ if(LV==0){const pool=j%2?P([CL,SP]):OB,t=P(pool),ds=SH(pool.filter(x=>x!=t)).slice(0,2);return{t:'mcq',i:t[1],s:'Mana '+t[1],h:()=>`Mana ${t[1]}? 🔊`,o:SH([t,...ds]).map(x=>x[0]),a:[t[0]]}}
+ const pool=LV==1?OB:[...OB,...CL,...SP];return{t:'drag',d:SH(pool).slice(0,LV==3?4:3),s:'Seret gambar ke perkataan yang betul'}})};
+GEN.eja=()=>SH(WP[LV].filter(w=>!w[2])).slice(0,4).map(w=>{const Wd=w[0].join('').toUpperCase(),nb=LV>2?(Wd.length>6?3:2):LV>1?2:1,pos=SH([...Wd].map((_,j)=>j)).slice(0,nb).sort((a,b)=>a-b),ans=pos.map(j=>Wd[j]),t=[...ans];SH(ALL).forEach(c=>{if(t.length<ans.length+3&&!t.includes(c))t.push(c)});return{t:'eja',i:Wd,s:'Eja '+w[0].join(''),e:w[1],w:Wd,pos,ans,tiles:SH(t)}});
+// helpers
+WP[1].push(...W('ti-kus 🐭,be-bek 🦆,le-bah 🐝,ke-ju 🧀,ro-ti 🍞,te-lur 🥚'));
+WP[2].push(...W('bin-tang ⭐,lem-bu 🐄,ku-da 🐴,ba-wang 🧅,ke-tam 🦀'));
+WP[3].push(...W('pe-sa-wat ✈️,ke-re-ta-pi 🚂,ma-ka-nan 🍽️,ke-ru-si 🪑,te-le-fon 📞'),[['Ayah','baca','buku'],'📖',1],[['Ali','main','bola'],'⚽',1],[['Ibu','beli','roti'],'🍞',1],[['Adik','minum','susu'],'🥛',1]);
+TW[0].push(...'a b c d e'.split(' '));TW[1].push(...'f g h i j'.split(' '));TW[2].push(...'k p r 16 17 18 19 20'.split(' '));
+GEN.huruf=()=>[0,1,2,3].map(()=>{const L=P(LP[LV-1].split('')),l=L.toLowerCase(),v=R(0,2),oth=SH(ALL.filter(x=>x!=L)).slice(0,3);
+ if(v==0)return{t:'mcq',i:'Huruf '+L,s:'Huruf '+L,h:()=>'🔊 Dengar, pilih huruf yang betul',o:SH([L,...oth]).map(x=>x+x.toLowerCase()),a:[L+l]};
+ if(v==1)return{t:'mcq',i:'Huruf '+L,s:'Mana huruf kecil bagi '+L,h:()=>`Mana huruf kecil bagi <b>${L}</b>? 🔊`,o:SH([l,...oth.map(x=>x.toLowerCase())]),a:[l]};
+ return{t:'mcq',i:'Huruf '+L,s:'Mana huruf besar bagi '+l,h:()=>`Mana huruf besar bagi <b>${l}</b>? 🔊`,o:SH([L,...oth]),a:[L]}});
+const K=q=>q.t=='drag'?q.d.map(x=>x[1]).sort().join('|'):q.s+'|'+(q.h?q.h(0):q.i||q.l);
+function mk(t,n){const r=[],seen=new Set();for(let a=0;a<n*40&&r.length<n;a++)for(const q of GEN[t]()){const k=K(q);if(!seen.has(k)&&r.length<n){seen.add(k);r.push(q)}}
+ while(r.length<n)r.push(...GEN[t]().slice(0,n-r.length));return SH(r)}
+const NQ=i=>(U.q||{})[i]||5,sc=ok=>{SC.n++;if(ok)SC.c++};
+const qsel=i=>`<div class="card">Jumlah soalan: ${[5,10,15,20,50,100].map(x=>`<button class="btn sm${NQ(i)==x?' done':''}" onclick="setq(${i},${x})">${x}</button>`).join('')}</div>`;
+function setq(i,x){U.q=U.q||{};U.q[i]=x;save();lvl(i)}
+function fin(){const g=SC.n>0,p=g?Math.round(SC.c/SC.n*100):0,w=g&&p>=80;if(w){U.r=(U.r||0)+1;save()}
+ const m=w?`Hebat, ${U.nick}! Kamu dapat hadiah!`:`Tahniah, ${U.nick}! Terus berlatih ya.`;say(m);
+ A.innerHTML=kiki(m)+(g?`<div class="card"><div class="big">${w?'🏆':'⭐'}</div><div class="word">${SC.c}/${SC.n}</div><p>Markah: <b>${p}%</b></p>${w?'<div class="em" style="animation:bn 1s infinite">🎉🌟🎈🌟🎉</div><p>Hadiah: 1 piala 🏆</p>':''}</div>`:'<p>Latihan membaca dan menulis tiada markah. Hebat!</p>')+`<button class="btn" onclick="lvl(${LV})">Seterusnya ➜</button>`}
+function rr(){A.innerHTML=kiki('Padam semua data laporan?')+'<p>Kemajuan, masa belajar, sesi dan hadiah akan dipadam.</p><button class="btn alt" onclick="U.s={};U.l=[];U.t=0;U.p={};U.r=0;save();report()">Ya, reset</button><button class="btn" onclick="report()">Batal</button>'}
+function rec(k,ok){const s=U.s[k]||(U.s[k]={g:0,b:0});ok?s.g++:s.b++;save()}
+const hd=(i,n)=>`<div class="pg">${i}/${n}</div>`;
+// screens
+function login(){bk(0);A.innerHTML=kiki('Hai! Saya Kiki. Jom belajar!')+`<div class="card"><input id="u" placeholder="Nama pengguna" autocapitalize="off"><input id="p" type="password" placeholder="Kata laluan"><input id="n" placeholder="Nama panggilan (untuk daftar baharu)"><input id="rp" type="password" inputmode="numeric" maxlength="4" placeholder="PIN 4 digit ibu bapa atau guru (daftar baharu)"><div id="er" class="er"></div><button class="btn" onclick="enter(0)">Masuk</button><button class="btn alt" onclick="enter(1)">Daftar</button><div class="pg">Versi 2.0</div></div>`}
+function enter(reg){const u=$('#u').value.trim().toLowerCase(),p=$('#p').value,n=$('#n').value.trim(),er=$('#er');
+ if(!u||!p){er.textContent='Sila isi nama pengguna dan kata laluan.';return}
+ if(reg){if(DB.users[u]){er.textContent='Nama pengguna sudah ada.';return}if(!n){er.textContent='Sila isi nama panggilan.';return}const pn=$('#rp').value;if(!/^\d{4}$/.test(pn)){er.textContent='Tetapkan PIN 4 digit untuk ibu bapa atau guru.';return}DB.users[u]=U={u,pw:p,nick:n,pin:pn,p:{},s:{},t:0};save()}
+ else{const x=DB.users[u];if(!x||x.pw!==p){er.textContent='Nama pengguna atau kata laluan salah.';return}U=x}
+ U.sc=U.sc||{};U.st=U.st||{};say('Hai '+U.nick);home()}
+function pre(){bk(0);A.innerHTML=kiki(`Hai, ${U.nick}! Pilih tahap ya.${U.r?' 🏆 '+U.r:''}`)+`<div class="grid">${LI.map((l,i)=>`<button class="btn" onclick="lvl(${i})">${l}</button>`).join('')}</div><button class="btn alt" onclick="home()">⬅ Menu utama</button><button class="btn alt" onclick="report()">📋 Laporan Pra-Sekolah</button><button class="btn alt" onclick="U=null;login()">Keluar</button>`}
+function lvl(i){LV=i;bk(0);speechSynthesis&&speechSynthesis.cancel();const tl=TP.filter(t=>i>0||t.id=='objek');
+ A.innerHTML=`<button class="btn alt sm" onclick="pre()">⬅</button><h2>${LI[i]}</h2>`+qsel(i)+tl.map(t=>{const d=U.p[i+':'+t.id]||0;return`<div class="card"><b>${t.e} ${t.n}</b><div class="row">${[...Array(NS(i))].map((_,s)=>s<=d?`<button class="btn sm${s<d?' done':''}" onclick="run('${t.id}',${s})">${s<d?'⭐':s+1}</button>`:`<button class="btn sm" disabled>🔒</button>`).join('')}</div></div>`}).join('')}
+function run(t,s){endSess(0);CT=t;CS=s;bk(1);SN=LI[LV]+' · '+TP.find(x=>x.id==t).n+' · Aktiviti '+(s+1);T0=Date.now();$('#tm').textContent='⏱ 00:00';TI=setInterval(()=>{$('#tm').textContent='⏱ '+fm(Math.round((Date.now()-T0)/1000))},1000);SC={c:0,n:0};const qs=mk(t,NQ(LV)),n=qs.length;let i=0;$('#nt').textContent=n<NQ(LV)?' · hanya '+n+' soalan unik':'';
+ const nx=()=>{if(i>=n){const k=LV+':'+t;U.p[k]=Math.max(U.p[k]||0,s+1);endSess(1);bk(0);fin();return}
+  const q=qs[i++];CUR=q;ENG[q.t](q,nx,i,n)};nx()}
+function mcq(q,nx,i,n){let k=0,bad=0;const o=q.o;
+ const draw=()=>{A.innerHTML=`${hd(i,n)}<div class="prompt">${q.h(k)}</div><button class="btn alt sm" onclick="say(CUR.s)">🔊</button><div class="row">${o.map((x,j)=>`<button class="btn opt" data-j="${j}">${x}</button>`).join('')}</div>`;
+  A.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const j=+b.dataset.j;
+   if(o[j]===q.a[k]){say(P(OK).replace('@',U.nick));if(++k>=q.a.length){rec(q.i,bad==0);sc(bad==0);setTimeout(nx,900)}else draw()}
+   else{bad++;b.classList.add('no');say('Cuba lagi ya, '+U.nick);if(bad>=2)A.querySelectorAll('.opt')[o.indexOf(q.a[k])].classList.add('hint')}})};
+ draw();say(q.s)}
+function eja(q,nx,i,n){let bad=0;
+ const draw=()=>{A.innerHTML=`${hd(i,n)}<div class="big">${q.e}</div><div class="prompt">Seret huruf ke petak kosong</div><div>${[...q.w].map((c,j)=>q.pos.includes(j)?`<span class="bl" data-j="${j}"></span>`:`<span class="lt">${c}</span>`).join('')}</div><br><div class="row">${q.tiles.map(c=>`<div class="chip" data-c="${c}">${c}</div>`).join('')}</div><div><button class="btn alt sm" onclick="say(CUR.s)">🔊</button><button class="btn" id="hn">Hantar</button></div><div id="rs" class="er"></div>`;
+  A.querySelectorAll('.chip').forEach(c=>{c.onpointerdown=e=>{e.preventDefault();c.setPointerCapture(e.pointerId);const sx=e.clientX,sy=e.clientY;c.style.zIndex=9;
+   c.onpointermove=m=>{c.style.transform=`translate(${m.clientX-sx}px,${m.clientY-sy}px)`};
+   c.onpointerup=m=>{c.onpointermove=c.onpointerup=null;c.style.pointerEvents='none';const t=document.elementFromPoint(m.clientX,m.clientY);c.style.pointerEvents='';const b=t&&t.closest('.bl');
+    if(b&&!b.dataset.c){b.dataset.c=c.dataset.c;b.textContent=c.dataset.c;b.classList.add('f');c.style.display='none';c.dataset.u=b.dataset.j}else{c.style.transform='';c.style.zIndex=''}}}});
+  A.querySelectorAll('.bl').forEach(b=>b.onclick=()=>{if(!b.dataset.c)return;const c=A.querySelector(`.chip[data-u="${b.dataset.j}"]`);if(c){c.style.display='';c.style.transform='';c.style.zIndex='';delete c.dataset.u}delete b.dataset.c;b.textContent='';b.classList.remove('f','x')});
+  $('#hn').onclick=()=>{const bl=[...A.querySelectorAll('.bl')],rs=$('#rs');
+   if(bl.some(b=>!b.dataset.c)){rs.textContent='Isi semua petak dahulu ya.';say('Isi semua petak dahulu ya');return}
+   if(bl.every((b,k)=>b.dataset.c===q.ans[k])){say(P(OK).replace('@',U.nick));rec(q.i,bad==0);sc(bad==0);rs.style.color='var(--ok)';rs.textContent='✓ Betul!';setTimeout(nx,1000)}
+   else{bad++;bl.forEach((b,k)=>b.classList.toggle('x',b.dataset.c!==q.ans[k]));rs.textContent='Belum betul. Cuba lagi!';say('Cuba lagi ya, '+U.nick);setTimeout(()=>{draw();if(bad>=2)$('#rs').textContent='Petunjuk: '+q.w},1400)}}};
+ draw();say(q.s)}
+function baca(q,nx,i,n){const C=['#e0675a','#3f8fd0','#3fa56b','#c58a00'];
+ A.innerHTML=`${hd(i,n)}<div class="big">${q.e}</div><div class="word">${q.c.map((x,j)=>`<span style="color:${C[j%4]}" onclick="say('${x}')">${x}</span>`).join(q.sent?' ':'')}</div><button class="btn alt sm" onclick="say(CUR.s)">🔊</button><div><button class="btn" id="nx">Seterusnya ➜</button></div>`;
+ say(q.s);$('#nx').onclick=()=>{rec(q.i,1);nx()}}
+function tulis(q,nx,i,n){A.innerHTML=`${hd(i,n)}<p>Jejak <b>${q.l}</b> dengan jari</p><canvas id="cv" width="300" height="300"></canvas><div class="row"><button class="btn alt" id="cl">Padam</button><button class="btn" id="ok">Siap ✓</button></div>`;
+ const c=$('#cv'),x=c.getContext('2d');
+ const gh=()=>{x.clearRect(0,0,300,300);x.font='bold 200px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='rgba(130,130,150,.3)';x.fillText(q.l,150,165)};gh();
+ x.lineWidth=16;x.lineCap=x.lineJoin='round';x.strokeStyle='#5b8fd0';let d=0;
+ const pt=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*300/r.width,(e.clientY-r.top)*300/r.height]};
+ c.onpointerdown=e=>{d=1;c.setPointerCapture(e.pointerId);const[a,b]=pt(e);x.beginPath();x.moveTo(a,b);x.lineTo(a+.1,b);x.stroke()};
+ c.onpointermove=e=>{if(!d)return;const[a,b]=pt(e);x.lineTo(a,b);x.stroke()};c.onpointerup=()=>d=0;
+ $('#cl').onclick=gh;$('#ok').onclick=()=>{rec(q.i,1);say(P(OK).replace('@',U.nick));setTimeout(nx,700)};say('Jejak '+q.l)}
+EM.push('🍓','🚗','🌸','🐥','🍪');
+TW[0].push(...'I O U i o u 0'.split(' '));TW[1].push(...'K L M k l m ba be bi bo bu ka ke ki ko ku'.split(' '));TW[2].push(...'N O Q S T U V W X Y Z q u v w x y z 21 22 23 24 25 26 27 28 29 30 ma me mi mo mu sa se si so su ta te ti to tu'.split(' '));
+const GD={},GT=`A:↗ naik ke puncak ➜ ↘ turun ➜ garis tengah
+B:↓ garis lurus ➜ lengkung atas ➜ lengkung bawah
+C:mula kanan atas ➜ ↶ lengkung ke kiri dan bawah
+D:↓ garis lurus ➜ lengkung besar ke kanan dan kembali
+E:↓ garis lurus ➜ tiga garis ke kanan
+F:↓ garis lurus ➜ garis atas ➜ garis tengah
+G:↶ lengkung seperti C ➜ garis ke tengah
+H:↓ garis kiri ➜ ↓ garis kanan ➜ garis tengah
+I:➜ garis atas ➜ ↓ garis tengah ➜ garis bawah
+J:↓ garis ke bawah ➜ ↶ lengkung kiri
+K:↓ garis lurus ➜ ↖ ke tengah ➜ ↘ ke kanan bawah
+L:↓ garis lurus ➜ garis ke kanan di bawah
+M:↓ garis kiri ➜ ↘ ke tengah ➜ ↗ naik ➜ ↓ garis kanan
+N:↓ garis kiri ➜ ↘ serong ➜ ↑ garis kanan
+O:mula atas ➜ ↶ bulatan melawan arah jam
+P:↓ garis lurus ➜ lengkung kanan di atas
+Q:↶ bulatan seperti O ➜ ↘ garis kecil di bawah
+R:↓ garis lurus ➜ lengkung atas ➜ ↘ kaki
+S:mula kanan atas ➜ ↶ lengkung kiri ➜ ↷ lengkung kanan bawah
+T:➜ garis atas ➜ ↓ garis tengah
+U:↓ turun kiri ➜ ↷ lengkung bawah ➜ ↑ naik kanan
+V:↘ turun ke tengah ➜ ↗ naik ke kanan
+W:↘ ↗ ↘ ↗ zig-zag empat garis
+X:↘ garis serong ➜ ↙ garis menyilang
+Y:↘ ke tengah ➜ ↙ ke tengah ➜ ↓ turun
+Z:➜ garis atas ➜ ↙ serong ➜ garis bawah
+a:↶ bulatan kecil ➜ ↓ garis kanan
+b:↓ garis tinggi ➜ bulatan di kanan
+c:mula kanan ➜ ↶ lengkung ke kiri dan bawah
+d:↶ bulatan kecil ➜ ↓ garis tinggi di kanan
+e:➜ garis tengah ➜ ↶ lengkung atas dan bawah
+f:↶ lengkung atas ➜ ↓ turun ➜ garis silang
+g:↶ bulatan kecil ➜ ↓ turun ➜ ↶ ekor
+h:↓ garis tinggi ➜ ↗ lengkung kanan ➜ ↓ turun
+i:↓ garis pendek ➜ titik di atas
+j:↓ turun ➜ ↶ lengkung kecil ➜ titik di atas
+k:↓ garis tinggi ➜ ↖ ke tengah ➜ ↘ ke kanan bawah
+l:↓ garis lurus ke bawah
+m:↓ garis kiri ➜ ↗ lengkung ➜ ↓ turun ➜ ↗ lengkung ➜ ↓ turun
+n:↓ garis kiri ➜ ↗ lengkung kanan ➜ ↓ turun
+o:↶ bulatan kecil melawan arah jam
+p:↓ garis ke bawah ➜ bulatan di kanan atas
+q:↶ bulatan kecil ➜ ↓ garis kanan ke bawah
+r:↓ garis kiri ➜ ↗ lengkung kecil
+s:mula kanan atas ➜ ↶ kiri ➜ ↷ kanan bawah
+t:↓ garis tengah ➜ garis silang di atas
+u:↓ turun kiri ➜ ↷ lengkung ➜ ↑ naik ➜ ↓ turun
+v:↘ turun ke tengah ➜ ↗ naik ke kanan
+w:↘ ↗ ↘ ↗ zig-zag
+x:↘ garis serong ➜ ↙ garis menyilang
+y:↘ garis kiri ➜ ↙ garis kanan panjang
+z:➜ garis atas ➜ ↙ serong ➜ garis bawah
+0:mula atas ➜ ↶ bulatan lonjong
+1:↓ garis lurus ke bawah
+2:↷ lengkung kanan ➜ ↙ serong ➜ garis bawah ke kanan
+3:↷ lengkung atas ➜ ↷ lengkung bawah
+4:↙ serong ➜ garis ke kanan ➜ ↓ garis lurus
+5:➜ garis atas ➜ ↓ turun ➜ ↷ lengkung bawah
+6:↙ lengkung turun ➜ ↶ bulatan bawah
+7:➜ garis atas ➜ ↙ serong turun
+8:↶ bulatan atas ➜ ↷ bulatan bawah
+9:↶ bulatan atas ➜ ↓ garis lurus`;
+GT.split('\n').forEach(l=>{GD[l[0]]=l.slice(2)});
+const gd=s=>[...s].map(c=>GD[c]?(s.length>1?c+': ':'')+GD[c]:'').filter(Boolean).join(' | ')||'ikut garisan pudar';
+GEN.huruf=()=>[0,1,2,3].map(()=>{const L=P(LP[LV-1].split('')),l=L.toLowerCase(),v=R(0,7),oth=SH(ALL.filter(x=>x!=L)).slice(0,3),M=(s,h,o,a)=>({t:'mcq',i:'Huruf '+a[0].toUpperCase(),s,h:()=>h,o:SH(o),a:[a]}),dn=()=>M('Huruf '+L,'🔊 Dengar, pilih huruf yang betul',[L,...oth].map(x=>x+x.toLowerCase()),L+l);
+ if(v==0)return dn();
+ if(v==1)return M('Mana huruf kecil bagi '+L,`Mana huruf kecil bagi <b>${L}</b>? 🔊`,[l,...oth.map(x=>x.toLowerCase())],l);
+ if(v==2)return M('Mana huruf besar bagi '+l,`Mana huruf besar bagi <b>${l}</b>? 🔊`,[L,...oth],L);
+ if(v<5||v>6){const w=P(WP[LV].filter(x=>!x[2])),j=w[0].join(''),c=(v==3?j[0]:v==4?j[j.length-1]:j[1]).toUpperCase(),t=v==3?'pertama':v==4?'akhir':'kedua';return M(`Huruf ${t} ${j}`,`<div class="big">${w[1]}</div>Huruf ${t} bagi <b>${j}</b>? 🔊`,[c,...SH(ALL.filter(x=>x!=c)).slice(0,3)],c)}
+ const k=ALL.indexOf(L),a=ALL[v==5?k+1:k-1];if(!a)return dn();const t=v==5?'selepas':'sebelum';
+ return M(`Huruf ${t} ${L}`,`Apakah huruf ${t} <b>${L}</b>? 🔊`,[a,...SH(ALL.filter(x=>x!=a)).slice(0,3)],a)});
+GEN.baca=()=>[0,1,2,3].map(()=>{const p=WP[LV],w=P(p),j=w[0].join(w[2]?' ':''),v=R(0,2),ds=SH(p.filter(x=>x!=w)).slice(0,2),C=['#e0675a','#3f8fd0','#3fa56b','#c58a00'],cw=w[0].map((x,k)=>`<span style="color:${C[k%4]}">${x}</span>`).join(w[2]?' ':'');
+ if(v==0)return{t:'baca',c:w[0],e:w[1],sent:w[2],s:j,i:j};
+ if(v==1)return{t:'mcq',i:j,s:'Pilih gambar bagi '+j,h:()=>`<div class="word">${cw}</div>Mana gambarnya? 🔊`,o:SH([w[1],...ds.map(x=>x[1])]),a:[w[1]]};
+ return{t:'mcq',i:j,s:'Mana perkataan bagi gambar ini',h:()=>`<div class="big">${w[1]}</div>Mana perkataannya? 🔊`,o:SH([j,...ds.map(x=>x[0].join(x[2]?' ':''))]),a:[j]}});
+function tulis(q,nx,i,n){let bad=0;const L=q.l;
+ A.innerHTML=`${hd(i,n)}<p>Tulis <b>${L}</b> mengikut garisan</p><div class="card" style="font-size:18px">➜ ${gd(L)}</div><canvas id="cv" width="300" height="300"></canvas><div class="row"><button class="btn alt" id="cl">Padam</button><button class="btn" id="ok">Semak ✓</button></div><div id="rs" class="er"></div>`;
+ const c=$('#cv'),x=c.getContext('2d'),ic=document.createElement('canvas');ic.width=ic.height=300;const ix=ic.getContext('2d');
+ const fnt=g=>{g.font='bold 200px sans-serif';g.textAlign='center';g.textBaseline='middle'};
+ const gh=()=>{x.clearRect(0,0,300,300);fnt(x);x.fillStyle='rgba(130,130,150,.3)';x.fillText(L,150,165);ix.clearRect(0,0,300,300)};gh();
+ [x,ix].forEach(g=>{g.lineWidth=16;g.lineCap=g.lineJoin='round';g.strokeStyle='#5b8fd0'});
+ let d=0;const pt=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*300/r.width,(e.clientY-r.top)*300/r.height]};
+ c.onpointerdown=e=>{d=1;c.setPointerCapture(e.pointerId);const[a,b]=pt(e);[x,ix].forEach(g=>{g.beginPath();g.moveTo(a,b);g.lineTo(a+.1,b);g.stroke()})};
+ c.onpointermove=e=>{if(!d)return;const[a,b]=pt(e);[x,ix].forEach(g=>{g.lineTo(a,b);g.stroke()})};c.onpointerup=()=>d=0;
+ const grid=cv=>{const s=document.createElement('canvas');s.width=s.height=60;const g=s.getContext('2d');g.drawImage(cv,0,0,60,60);const D=g.getImageData(0,0,60,60).data,r=[];for(let k=0;k<3600;k++)if(D[k*4+3]>60)r.push(k);return new Set(r)};
+ const dil=(S,r)=>{const o=new Set();S.forEach(k=>{const a=k%60,b=(k-a)/60;for(let u=-r;u<=r;u++)for(let v=-r;v<=r;v++){const p=a+u,w=b+v;if(p>=0&&p<60&&w>=0&&w<60)o.add(w*60+p)}});return o};
+ const tp=document.createElement('canvas');tp.width=tp.height=300;const tg=tp.getContext('2d');fnt(tg);tg.fillStyle='#000';tg.fillText(L,150,165);
+ $('#cl').onclick=gh;
+ $('#ok').onclick=()=>{const G=grid(tp),I=grid(ic),rs=$('#rs');if(!I.size){rs.textContent='Sila tulis dahulu ya.';return}
+  const Gd=dil(G,3),Id=dil(I,3);let a=0,b=0;G.forEach(k=>{if(Id.has(k))a++});I.forEach(k=>{if(Gd.has(k))b++});
+  const p=Math.round(Math.min(a/G.size,b/I.size)*100);
+  if(p>=90){say(P(OK).replace('@',U.nick));rec(q.i,bad==0);sc(bad==0);rs.style.color='var(--ok)';rs.textContent='✓ Sama '+p+'%';setTimeout(nx,1200)}
+  else{bad++;rs.textContent='Sama '+p+'%. Perlu 90%. Cuba lagi mengikut garisan!';say('Cuba lagi ya, '+U.nick);setTimeout(gh,1400)}};
+ say('Tulis '+L)}
+WP[1].push(...W('ka-ki 🦶,gi-gi 🦷,na-si 🍚,ko-pi ☕,ma-du 🍯,a-pi 🔥,ka-tak 🐸,u-lar 🐍,a-wan ☁️,hu-jan 🌧️,bu-lan 🌙,po-kok 🌳,pa-tung 🧸,ka-til 🛏️,lam-pu 💡,pin-tu 🚪,o-ren 🍊,lo-bak 🥕,ba-tu 🪨,ta-ngan 🖐️'));
+WP[2].push(...W('an-jing 🐶,bu-rung 🐦,he-lang 🦅,je-rung 🦈,so-tong 🐙,si-nga 🦁,mo-nyet 🐒,ang-gur 🍇,na-nas 🍍,mang-ga 🥭,ja-gung 🌽,ken-tang 🥔,bis-kut 🍪,kun-ci 🔑,ting-kap 🪟,pen-sel ✏️,hi-dung 👃,mu-lut 👄,om-bak 🌊,pu-lau 🏝️,gu-nung ⛰️,te-li-nga 👂'));
+WP[3].push(...W('bu-a-ya 🐊,ha-ri-mau 🐯,be-ru-ang 🐻,ra-ma-ra-ma 🦋,ku-ra-ku-ra 🐢,tem-bi-kai 🍉,to-ma-to 🍅,se-lu-ar 👖,ha-di-ah 🎁,he-li-kop-ter 🚁,mo-to-si-kal 🛵,te-le-vi-syen 📺,kom-pu-ter 💻,ka-me-ra 📷,pa-yung 🌂,se-pa-tu 👞,ba-te-ri 🔋,se-mut 🐜,pe-li-kan 🦩,sa-yur 🥬'));
+WP[2]=[...WP[1],...WP[2]];WP[3]=[...WP[2],...WP[3]];
+TW[1]=[...new Set([...TW[0],...TW[1]])];TW[2]=[...new Set([...TW[1],...TW[2]])];TW[0]=[...new Set(TW[0])];
+const UQ={};let CT='',CS=0;
+function mk(t,n){const u=UQ[t+LV]||(UQ[t+LV]=new Set()),r=[],seen=new Set(),pass=ex=>{for(let a=0;a<6000&&r.length<n;a++)for(const q of GEN[t]()){const k=K(q);if(r.length<n&&!seen.has(k)&&!(ex&&u.has(k))){seen.add(k);r.push(q)}}};
+ pass(1);if(r.length<n){u.clear();r.forEach(q=>u.add(K(q)));pass(0)}
+ r.forEach(q=>u.add(K(q)));return SH(r)}
+function renew(){clearInterval(TI);TI=null;run(CT,CS)}
+const SUB={srk:[['bm','Bahasa Melayu'],['bi','Bahasa Inggeris'],['mat','Matematik'],['sains','Sains'],['pi','Pendidikan Islam']],sra:[['akidah','Akidah'],['ibadah','Ibadah'],['sirah','Sirah'],['adab','Adab'],['hadis','Hadis'],['arab','Bahasa Arab'],['jawi','Jawi',1],['fardhu','Fardhu Ain',1]]},MN={srk:'Sekolah Rendah Kebangsaan (KSSR)',sra:'Sekolah Rendah Agama'},GN=['','Tambah dan tolak dalam lingkungan 100.','Tambah dan tolak dalam lingkungan 1 000, serta sifir 2, 4, 5 dan 10.','Tambah dan tolak dalam lingkungan 10 000, serta sifir hingga 10.'];
+const BKT=`#srk|bm|1|Suku kata|Setiap perkataan dipecahkan kepada suku kata, contohnya bo-la.
+Berapakah suku kata dalam perkataan bola?|2|1|3|bo-la ada dua suku kata.
+Berapakah suku kata dalam perkataan kucing?|2|3|1|ku-cing ada dua suku kata.
+Berapakah suku kata dalam perkataan matahari?|4|2|3|ma-ta-ha-ri ada empat suku kata.
+Berapakah suku kata dalam perkataan buku?|2|1|3|bu-ku ada dua suku kata.
+#srk|bm|2|Lawan kata|Lawan kata ialah perkataan yang bertentangan makna.
+Apakah lawan kata bagi besar?|kecil|tinggi|luas|Lawan kata besar ialah kecil.
+Apakah lawan kata bagi panas?|sejuk|hangat|kering|Lawan kata panas ialah sejuk.
+Apakah lawan kata bagi tinggi?|rendah|besar|jauh|Lawan kata tinggi ialah rendah.
+#srk|bm|3|Jenis kata|Kata nama menamakan benda, kata kerja menunjukkan perbuatan, kata sifat menerangkan sifat.
+Yang manakah kata kerja?|makan|buku|merah|Makan menunjukkan perbuatan.
+Yang manakah kata nama?|kucing|berlari|cantik|Kucing ialah nama haiwan.
+Yang manakah kata sifat?|cantik|menulis|meja|Cantik menerangkan sifat.
+#srk|bi|1|Colours and animals|Learn colours and animal names in English.
+What colour is a banana?|Yellow|Blue|Red|Bananas are yellow.
+Which one is an animal?|Cat|Table|Book|A cat is an animal.
+Which number comes after three?|Four|Two|Five|Four comes after three.
+#srk|bi|2|Present continuous|Use is, am or are with a verb ending in ing for actions happening now.
+She ___ reading a book now.|is|are|am|Use is with she.
+They ___ playing football.|are|is|am|Use are with they.
+I ___ eating lunch.|am|is|are|Use am with I.
+#srk|bi|3|Was and were|Use was or were to talk about the past.
+I ___ at home yesterday.|was|were|is|Use was with I.
+They ___ at school yesterday.|were|was|am|Use were with they.
+She ___ happy yesterday.|was|were|are|Use was with she.
+#srk|mat|1|Wang dan ruang|Satu ringgit ada 100 sen. Segi tiga mempunyai tiga sisi.
+Berapakah sen dalam RM1?|100|10|50|RM1 ialah 100 sen.
+Berapakah sisi sebuah segi tiga?|3|4|2|Segi tiga mempunyai tiga sisi.
+Satu per dua juga dipanggil?|setengah|suku|tiga suku|Satu per dua ialah setengah.
+#srk|mat|2|Masa|Seminggu ada 7 hari dan setahun ada 12 bulan.
+Berapakah hari dalam seminggu?|7|5|10|Seminggu ada tujuh hari.
+Berapakah bulan dalam setahun?|12|10|11|Setahun ada dua belas bulan.
+#srk|mat|3|Sudut|Sudut tegak ialah 90 darjah. Garis seranjang bertemu pada sudut tegak.
+Berapakah darjah sudut tegak?|90|60|180|Sudut tegak ialah 90 darjah.
+Dua garis seranjang bertemu pada sudut?|90 darjah|45 darjah|180 darjah|Garis seranjang bertemu pada sudut tegak.
+#srk|sains|1|Organ deria|Mata untuk melihat, telinga untuk mendengar, hidung untuk menghidu, lidah untuk merasa.
+Organ untuk melihat ialah?|mata|telinga|hidung|Mata digunakan untuk melihat.
+Telinga digunakan untuk?|mendengar|melihat|menghidu|Telinga digunakan untuk mendengar.
+Hidung digunakan untuk?|menghidu|merasa|melihat|Hidung digunakan untuk menghidu.
+Lidah digunakan untuk?|merasa|mendengar|menghidu|Lidah digunakan untuk merasa.
+#srk|sains|2|Tumbuhan dan haiwan|Tumbuhan memerlukan air, cahaya matahari dan udara. Ada haiwan bertelur dan ada yang beranak.
+Tumbuhan memerlukan air, cahaya dan?|udara|plastik|gula|Tumbuhan memerlukan air, cahaya matahari dan udara.
+Yang manakah haiwan bertelur?|ayam|kucing|lembu|Ayam bertelur.
+Yang manakah haiwan beranak?|kucing|ayam|katak|Kucing beranak.
+#srk|sains|3|Pemakanan haiwan dan angkasa|Herbivor makan tumbuhan, karnivor makan daging, omnivor makan kedua-duanya.
+Haiwan yang makan tumbuhan sahaja ialah?|herbivor|karnivor|omnivor|Herbivor makan tumbuhan sahaja.
+Haiwan yang makan daging sahaja ialah?|karnivor|herbivor|omnivor|Karnivor makan daging sahaja.
+Matahari ialah?|bintang|planet|bulan|Matahari ialah bintang.
+#srk|pi|1|Rukun Islam|Rukun Islam ada lima. Solat fardhu lima waktu sehari semalam.
+Berapakah rukun Islam?|5|6|4|Rukun Islam ada lima.
+Rukun Islam yang pertama ialah?|mengucap dua kalimah syahadah|berpuasa|menunaikan zakat|Rukun Islam yang pertama ialah mengucap dua kalimah syahadah.
+Berapa kali solat fardhu sehari semalam?|5|3|7|Solat fardhu lima kali sehari semalam.
+#srk|pi|2|Solat|Solat dimulakan dengan takbiratulihram dan diakhiri dengan salam.
+Solat dimulakan dengan?|takbiratulihram|salam|sujud|Solat dimulakan dengan takbiratulihram.
+Berapakah rakaat solat Subuh?|2|3|4|Solat Subuh dua rakaat.
+Kitab suci umat Islam ialah?|Al-Quran|Taurat|Injil|Al-Quran ialah kitab suci umat Islam.
+#srk|pi|3|Azan dan puasa|Azan menandakan masuk waktu solat. Puasa Ramadan wajib bagi umat Islam yang cukup syarat.
+Azan dilaungkan untuk?|menandakan masuk waktu solat|memulakan puasa|menutup solat|Azan menandakan masuk waktu solat.
+Orang yang melaungkan azan ialah?|muazin|imam|khatib|Muazin melaungkan azan.
+Puasa wajib dilakukan pada bulan?|Ramadan|Syawal|Rejab|Puasa wajib dilakukan pada bulan Ramadan.
+#sra|akidah|1|Rukun iman|Rukun iman ada enam. Yang pertama ialah beriman kepada Allah.
+Berapakah rukun iman?|6|5|7|Rukun iman ada enam.
+Rukun iman yang pertama ialah?|beriman kepada Allah|beriman kepada kitab|beriman kepada hari kiamat|Rukun iman yang pertama ialah beriman kepada Allah.
+Rasul yang terakhir ialah?|Nabi Muhammad SAW|Nabi Isa AS|Nabi Musa AS|Nabi Muhammad SAW ialah rasul yang terakhir.
+#sra|akidah|2|Kitab dan malaikat|Allah menurunkan kitab kepada rasul. Malaikat Jibril menyampaikan wahyu.
+Kitab yang diturunkan kepada Nabi Muhammad SAW ialah?|Al-Quran|Taurat|Zabur|Al-Quran diturunkan kepada Nabi Muhammad SAW.
+Malaikat yang menyampaikan wahyu ialah?|Jibril|Mikail|Israfil|Jibril menyampaikan wahyu.
+Al-Khaliq bermaksud?|Maha Pencipta|Maha Pengampun|Maha Mengetahui|Al-Khaliq bermaksud Maha Pencipta.
+#sra|akidah|3|Hari kiamat dan nama Allah|Kita beriman kepada hari kiamat serta qada dan qadar.
+Beriman kepada hari kiamat ialah beriman bahawa?|dunia akan berakhir|dunia kekal selamanya|manusia tidak dihisab|Dunia akan berakhir pada hari kiamat.
+Ar-Rahman bermaksud?|Maha Pemurah|Maha Pencipta|Maha Mengetahui|Ar-Rahman bermaksud Maha Pemurah.
+Qada dan qadar ialah?|ketentuan Allah|kebetulan|pilihan manusia sahaja|Qada dan qadar ialah ketentuan Allah.
+#sra|ibadah|1|Bersuci dan solat|Istinjak ialah membersihkan diri selepas membuang air. Wuduk dilakukan sebelum solat.
+Wuduk dilakukan sebelum?|solat|makan|tidur|Wuduk dilakukan sebelum solat.
+Istinjak ialah?|membersihkan diri selepas membuang air|mandi wajib|mengambil wuduk|Istinjak ialah membersihkan diri selepas membuang air.
+Berapa solat fardhu sehari semalam?|5|3|6|Solat fardhu lima kali sehari semalam.
+#sra|ibadah|2|Rukun solat dan mandi wajib|Niat ialah rukun solat yang pertama.
+Rukun solat yang pertama ialah?|niat|salam|sujud|Niat ialah rukun solat yang pertama.
+Berapakah rakaat solat Maghrib?|3|2|4|Solat Maghrib tiga rakaat.
+Mandi wajib perlu meratakan air ke?|seluruh badan|tangan sahaja|kaki sahaja|Air perlu rata ke seluruh badan.
+#sra|ibadah|3|Puasa, azan dan iqamah|Iqamah dilaungkan sebelum solat berjemaah bermula.
+Hukum puasa Ramadan ialah?|wajib|sunat|harus|Puasa Ramadan hukumnya wajib.
+Iqamah dilaungkan?|sebelum solat berjemaah bermula|selepas solat|semasa berbuka puasa|Iqamah dilaungkan sebelum solat berjemaah bermula.
+Azan bertujuan?|menandakan masuk waktu solat|menutup solat|memulakan puasa|Azan menandakan masuk waktu solat.
+#sra|sirah|1|Nabi Muhammad SAW|Nabi Muhammad SAW dilahirkan di Makkah. Ayah baginda Abdullah dan ibu baginda Aminah.
+Nabi Muhammad SAW dilahirkan di?|Makkah|Madinah|Mesir|Nabi Muhammad SAW dilahirkan di Makkah.
+Nama ayah Nabi Muhammad SAW ialah?|Abdullah|Abu Talib|Abu Lahab|Ayah baginda bernama Abdullah.
+Nama ibu Nabi Muhammad SAW ialah?|Aminah|Khadijah|Aisyah|Ibu baginda bernama Aminah.
+#sra|sirah|2|Zaman kanak-kanak Nabi|Nabi dijaga oleh datuk dan bapa saudara baginda. Baginda digelar Al-Amin.
+Gelaran Nabi Muhammad SAW sebelum kerasulan ialah?|Al-Amin|Al-Faruq|Al-Siddiq|Baginda digelar Al-Amin, orang yang dipercayai.
+Nabi dijaga oleh datuknya iaitu?|Abdul Muttalib|Abu Bakar|Umar|Abdul Muttalib menjaga baginda selepas ibunya wafat.
+Bapa saudara yang menjaga Nabi ialah?|Abu Talib|Abu Lahab|Abu Jahal|Abu Talib menjaga baginda.
+#sra|sirah|3|Kerasulan|Wahyu pertama diterima di Gua Hira. Dakwah bermula secara sembunyi-sembunyi.
+Wahyu pertama diturunkan di?|Gua Hira|Masjid Nabawi|Padang Arafah|Wahyu pertama diturunkan di Gua Hira.
+Malaikat yang menyampaikan wahyu ialah?|Jibril|Mikail|Israfil|Jibril menyampaikan wahyu kepada Nabi.
+Dakwah Nabi pada awalnya dilakukan secara?|sembunyi-sembunyi|terbuka|dalam peperangan|Dakwah bermula secara sembunyi-sembunyi.
+#sra|adab|1|Adab makan dan minum|Baca bismillah sebelum makan, makan dengan tangan kanan dan ucap alhamdulillah selepas makan.
+Sebelum makan kita membaca?|bismillah|alhamdulillah|subhanallah|Kita membaca bismillah sebelum makan.
+Kita makan menggunakan tangan?|kanan|kiri|kedua-duanya|Makan dengan tangan kanan.
+Selepas makan kita mengucapkan?|alhamdulillah|bismillah|astaghfirullah|Kita mengucap alhamdulillah selepas makan.
+#sra|adab|2|Adab terhadap orang lain|Kita hormat kepada ibu bapa dan guru serta menolong rakan.
+Kita perlu menghormati?|ibu bapa dan guru|diri sendiri sahaja|orang kaya sahaja|Kita perlu menghormati ibu bapa dan guru.
+Apabila guru mengajar, kita hendaklah?|mendengar dengan teliti|bermain|tidur|Kita mendengar dengan teliti.
+Rakan yang jatuh perlu kita?|tolong|gelakkan|tinggalkan|Kita perlu menolong rakan.
+#sra|adab|3|Adab menjaga alam|Kita menjaga kebersihan tempat awam dan alam sekitar.
+Sampah dibuang ke dalam?|tong sampah|longkang|taman|Buang sampah ke dalam tong sampah.
+Pokok di taman perlu?|dijaga|dipatahkan|dicabut|Pokok di taman perlu dijaga.
+Menjaga alam sekitar ialah tanggungjawab?|semua orang|guru sahaja|pekerja sahaja|Semua orang bertanggungjawab menjaga alam.
+#sra|hadis|1|Kasih sayang|Islam menggalakkan kasih sayang sesama manusia.
+Islam menggalakkan kita bersikap?|kasih sayang|bergaduh|kedekut|Islam menggalakkan kasih sayang.
+Kita perlu menyayangi?|sesama manusia|diri sendiri sahaja|orang kaya sahaja|Kita perlu menyayangi sesama manusia.
+#sra|hadis|2|Ilmu dan kebersihan|Kita disuruh menuntut ilmu. Kebersihan sebahagian daripada iman.
+Kita disuruh menuntut?|ilmu|harta|pangkat|Kita disuruh menuntut ilmu.
+Kebersihan sebahagian daripada?|iman|permainan|harta|Kebersihan sebahagian daripada iman.
+#sra|hadis|3|Senyuman dan persaudaraan|Senyuman kepada saudara kita ialah sedekah.
+Tersenyum kepada saudara kita dikira sebagai?|sedekah|dosa|hutang|Senyuman ialah sedekah.
+Sesama Muslim ialah?|bersaudara|musuh|orang asing|Sesama Muslim ialah bersaudara.
+#sra|arab|1|Salam dan nombor|Assalamualaikum ialah salam. Wahid ialah satu.
+Maksud Assalamualaikum ialah?|salam sejahtera ke atasmu|selamat pagi|terima kasih|Assalamualaikum bermaksud salam sejahtera ke atasmu.
+Nombor satu dalam bahasa Arab ialah?|wahid|ithnan|thalatha|Wahid bermaksud satu.
+Mata dalam bahasa Arab ialah?|ain|yad|rijl|Ain bermaksud mata.
+#sra|arab|2|Perbendaharaan kata|Kitab ialah buku. Ahmar ialah merah.
+Maksud kitab ialah?|buku|pensel|meja|Kitab bermaksud buku.
+Merah dalam bahasa Arab ialah?|ahmar|azraq|akhdar|Ahmar bermaksud merah.
+#sra|arab|3|Kata ganti nama|Ana ialah saya. Huwa ialah dia lelaki. Hiya ialah dia perempuan.
+Ana bermaksud?|saya|kamu|dia|Ana bermaksud saya.
+Huwa bermaksud?|dia lelaki|dia perempuan|kamu|Huwa bermaksud dia lelaki.
+Hiya bermaksud?|dia perempuan|dia lelaki|saya|Hiya bermaksud dia perempuan.
+`;
+const BKT2=`#srk|bm|1|Kesihatan dan keselamatan|Kita menjaga kebersihan dan keselamatan diri.
+Kita mencuci tangan sebelum?|makan|tidur|bermain|Mencuci tangan sebelum makan menjaga kesihatan.
+Kita melintas jalan di?|lintasan pejalan kaki|tengah jalan|tepi longkang|Melintas di lintasan pejalan kaki lebih selamat.
+Makanan yang berkhasiat ialah?|sayur|gula-gula|minuman bergas|Sayur berkhasiat untuk badan.
+#srk|bi|1|Greetings and classroom|Say hello and learn classroom objects.
+How do you greet someone in the morning?|Good morning|Good night|Goodbye|We say good morning in the morning.
+Which one is a classroom object?|pencil|banana|cat|A pencil is a classroom object.
+What colour is the sky on a sunny day?|Blue|Black|Green|The sky is blue on a sunny day.
+#srk|mat|1|Nombor hingga 100|Nombor ditulis dengan angka dan mempunyai nilai tempat.
+Dalam nombor 45, digit 4 bernilai?|40|4|45|Digit 4 berada di tempat puluh, jadi nilainya 40.
+Nombor selepas 29 ialah?|30|28|31|Selepas 29 ialah 30.
+Nombor yang paling besar ialah?|87|78|68|87 ialah nombor yang paling besar.
+#srk|mat|1|Pecahan dan masa|Satu per dua ialah setengah. Seminggu ada tujuh hari.
+Hari selepas Isnin ialah?|Selasa|Ahad|Rabu|Selepas Isnin ialah Selasa.
+Berapakah hari dalam seminggu?|7|5|10|Seminggu ada tujuh hari.
+Yang manakah satu per empat?|suku|setengah|tiga suku|Satu per empat ialah suku.
+#srk|mat|1|Bentuk|Segi tiga ada tiga sisi dan segi empat sama ada empat sisi.
+Berapakah sisi sebuah segi empat sama?|4|3|5|Segi empat sama mempunyai empat sisi.
+Bola berbentuk?|sfera|kubus|kon|Bola berbentuk sfera.
+Dadu berbentuk?|kubus|bulatan|segi tiga|Dadu berbentuk kubus.
+#srk|sains|1|Haiwan|Haiwan mempunyai bahagian tubuh yang berbeza untuk bergerak.
+Ikan bergerak menggunakan?|sirip|sayap|kaki|Ikan menggunakan sirip untuk berenang.
+Burung terbang menggunakan?|sayap|sirip|ekor|Burung menggunakan sayap untuk terbang.
+Tubuh kucing diselaputi?|bulu|sisik|kulit licin|Kucing berbulu.
+#srk|sains|1|Tumbuhan|Bahagian tumbuhan ialah akar, batang, daun dan bunga.
+Bahagian tumbuhan yang menyerap air ialah?|akar|daun|bunga|Akar menyerap air daripada tanah.
+Bahagian yang menyokong tumbuhan supaya tegak ialah?|batang|bunga|buah|Batang menyokong tumbuhan.
+Yang manakah bahagian tumbuhan?|daun|batu|kaca|Daun ialah bahagian tumbuhan.
+#srk|sains|1|Magnet|Magnet menarik besi dan mempunyai dua kutub.
+Magnet menarik benda daripada?|besi|kayu|plastik|Magnet menarik besi.
+Berapakah kutub sebuah magnet?|2|1|3|Magnet mempunyai dua kutub.
+Kutub yang sama apabila didekatkan akan?|tolak|tarik|diam|Kutub yang sama menolak.
+#srk|sains|1|Terang dan gelap|Matahari ialah sumber cahaya semula jadi. Bayang-bayang terbentuk apabila cahaya dihalang.
+Sumber cahaya semula jadi ialah?|matahari|lampu meja|lilin|Matahari ialah sumber cahaya semula jadi.
+Bayang-bayang terbentuk apabila cahaya?|dihalang|ditambah|dipadam|Bayang-bayang terbentuk apabila cahaya dihalang.
+#srk|sains|1|Bumi|Jenis tanah ialah tanah liat, pasir dan tanah organik.
+Jenis tanah ialah tanah liat, pasir dan?|tanah organik|air|batu besar|Tiga jenis tanah ialah tanah liat, pasir dan tanah organik.
+#srk|pi|1|Akidah dan adab|Allah mencipta kita. Kita membaca bismillah sebelum makan.
+Siapakah yang menciptakan kita?|Allah|ibu bapa|doktor|Allah menciptakan kita.
+Sebelum makan kita membaca?|bismillah|alhamdulillah|subhanallah|Kita membaca bismillah sebelum makan.
+Rasul yang terakhir ialah?|Nabi Muhammad SAW|Nabi Musa AS|Nabi Nuh AS|Nabi Muhammad SAW ialah rasul yang terakhir.
+`;
+const BK={};let CB=null;
+(BKT+BKT2).split('\n').forEach(l=>{if(!l.trim())return;const f=l.split('|');if(l[0]=='#'){CB={n:f[3],t:f[4],q:[]};const k=f[0].slice(1)+'|'+f[1]+'|'+f[2];(BK[k]=BK[k]||[]).push(CB)}else CB.q.push({q:f[0],o:[f[1],f[2],f[3]],a:0,e:f[4]})});
+const TPS=(m,s,y)=>{const b=(BK[m+'|'+s+'|'+y]||[]).slice();if(s=='mat')b.unshift({n:'Nombor dan operasi',t:GN[y],q:[],g:y});const g={};(DB.cq||[]).filter(x=>x.m==m&&x.s==s&&x.y==y).forEach(x=>{const n=x.t+(x.st?' › '+x.st:'');(g[n]=g[n]||{n,t:'Soalan tambahan daripada guru atau ibu bapa.',q:[]}).q.push({q:x.q,o:x.o,a:x.a,e:x.e})});return b.concat(Object.values(g))};
+const prog=(m,s)=>{let a=0,b=0;[1].forEach(y=>TPS(m,s,y).forEach((t,i)=>{b++;if(U.sc[m+'|'+s+'|'+y+'|'+i])a++}));return b?Math.round(a/b*100):0};
+function gm(y){const t=R(0,y>1?2:1);let q,a;
+ if(t<2){const hi=y==1?60:y==2?600:6000,x=R(10,hi),z=R(1,Math.min(x,y==1?40:y==2?400:4000));if(t==0){a=x+z;q=`${x} + ${z} = ?`}else{a=x-z;q=`${x} − ${z} = ?`}}
+ else{const m=P(y==2?[2,4,5,10]:[2,3,4,5,6,7,8,9,10]),k=R(1,10);a=m*k;q=`${m} × ${k} = ?`}
+ const o=nums(a).map(String);return{q:'Berapakah '+q,o,a:o.indexOf(String(a)),e:q.replace('?',a)}}
+function mkq(tps,n){const r=[],s=new Set(),add=q=>{if(!s.has(q.q)&&r.length<n){s.add(q.q);r.push(q)}};
+ tps.forEach(t=>t.q.forEach(x=>{const c=x.o[x.a],o=SH(x.o);add({...x,o,a:o.indexOf(c)})}));
+ const g=tps.find(t=>t.g);if(g)for(let k=0;k<n*20&&r.length<n;k++)add(gm(g.g));return SH(r)}
+const sayL=(t,l)=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=l;u.rate=.85;speechSynthesis.speak(u)}catch(e){}};
+function home(){bk(0);const l=U.last,ls=l?SUB[l.m].find(x=>x[0]==l.s):null;
+ A.innerHTML=kiki(`Hai, ${U.nick}! Pilih modul.${U.r?' 🏆 '+U.r:''}`)+`<div class="grid"><button class="btn" onclick="pre()">Pra-Sekolah<br><small>1–6 tahun</small></button><button class="btn" onclick="sek('srk')">SRK<br><small>Tahun 1</small></button><button class="btn" style="background:var(--c)" onclick="sek('sra')">SRA<br><small>Tahun 1</small></button></div>`+(U.ls?`<p>Markah terkini: <b>${U.ls.p}%</b> (${U.ls.n})</p>`:'')+(ls?`<button class="btn alt" onclick="tpc('${l.m}','${l.s}',${l.y})">▶ Sambung: ${ls[1]} Tahun ${l.y}</button>`:'')+`<div><button class="btn alt sm" onclick="pv()">Ibu bapa atau guru</button><button class="btn alt sm" onclick="U=null;login()">Keluar</button></div>`}
+function sek(m){bk(0);const g=m=='sra'?'#3f9e6a':'#3f8fd0';
+ A.innerHTML=`<button class="btn alt sm" onclick="home()">⬅</button><h2>${MN[m]}</h2>`+SUB[m].map(s=>`<div class="card" style="border-left:6px solid ${g}"><b>${s[1]}</b> <small>${s[2]?'(Akan datang)':'· '+prog(m,s[0])+'% siap'}</small><div class="row">${s[2]?'':[1].map(y=>`<button class="btn sm" onclick="tpc('${m}','${s[0]}',${y})">Tahun ${y}</button>`).join('')}</div></div>`).join('')}
+function tpc(m,s,y){bk(0);clearInterval(SS);const tl=TPS(m,s,y),nm=SUB[m].find(x=>x[0]==s)[1];
+ A.innerHTML=`<button class="btn alt sm" onclick="sek('${m}')">⬅</button><h2>${nm} · Tahun ${y}</h2>`+(tl.length?tl.map((t,i)=>{const r=U.sc[`${m}|${s}|${y}|${i}`];return`<div class="card"><b>${t.n}</b>${r?`<div class="pg">Terbaik ${r.best}% · Terkini ${r.last}%</div>`:''}<div class="row"><button class="btn sm" onclick="nota('${m}','${s}',${y},${i})">Nota</button><button class="btn sm" onclick="ss0('${m}','${s}',${y},${i},'l',5)">Latihan</button><button class="btn sm alt" onclick="uj('${m}','${s}',${y},${i})">Ujian</button></div></div>`}).join('')+`<div class="card"><b>Ujian subjek</b><div class="row"><button class="btn sm alt" onclick="uj('${m}','${s}',${y},-1)">Mula ujian subjek</button></div></div>`:'<p>Belum ada topik.</p>')}
+function nota(m,s,y,i){const t=TPS(m,s,y)[i];A.innerHTML=`<button class="btn alt sm" onclick="tpc('${m}','${s}',${y})">⬅</button><div class="card" style="text-align:left"><h3>${t.n}</h3><p>${t.t}</p></div><button class="btn" onclick="ss0('${m}','${s}',${y},${i},'l',5)">Mula latihan</button>`}
+function uj(m,s,y,i){const tl=i<0?TPS(m,s,y):[TPS(m,s,y)[i]],av=tl.some(t=>t.g)?999:tl.reduce((a,t)=>a+t.q.length,0);
+ A.innerHTML=`<button class="btn alt sm" onclick="tpc('${m}','${s}',${y})">⬅</button><h2>Mod Ujian</h2><div class="card">Pilih bilangan soalan${av<50?`<div class="pg">Hanya ${av} soalan tersedia buat masa ini</div>`:''}<div class="row">${[10,20,30,40,50].map(n=>`<button class="btn sm" onclick="ss0('${m}','${s}',${y},${i},'u',${n})">${n}</button>`).join('')}</div></div>`}
+function ss0(m,s,y,i,mode,n){const tl=i<0?TPS(m,s,y):[TPS(m,s,y)[i]];ss({m,s,y,i,mode,n,qs:mkq(tl,n)})}
+let SS=null,CX={};
+function ss(c){CX=c;let i=0,ok=0,w=[],T0=Date.now();clearInterval(SS);SS=setInterval(()=>{const e=$('#st');if(e)e.textContent='⏱ '+fm(Math.round((Date.now()-T0)/1000))},1000);
+ const fin=()=>{clearInterval(SS);const d=Math.round((Date.now()-T0)/1000),n=c.qs.length,p=n?Math.round(ok/n*100):0,k=`${c.m}|${c.s}|${c.y}|${c.i}`,r=U.sc[k]||(U.sc[k]={});r.last=p;r.best=Math.max(r.best||0,p);U.st[c.s]=(U.st[c.s]||0)+d;U.last={m:c.m,s:c.s,y:c.y};U.ls={n:SUB[c.m].find(x=>x[0]==c.s)[1],p};const wn=c.mode=='u'&&p>=80;if(wn)U.r=(U.r||0)+1;save();
+  A.innerHTML=kiki(wn?`Hebat, ${U.nick}! Kamu dapat hadiah!`:`Tahniah, ${U.nick}!`)+`<div class="card"><div class="big">${wn?'🏆':'⭐'}</div><div class="word">${ok}/${n}</div><p>Markah: <b>${p}%</b> · Masa ${fm(d)}</p></div>`+(w.length?`<div class="card" style="text-align:left"><b>Soalan salah</b>${w.map(x=>`<p>${x.q}<br>Jawapan: <b>${x.o[x.a]}</b><br>${x.e}</p>`).join('')}</div>`:'')+`<button class="btn" onclick="tpc('${c.m}','${c.s}',${c.y})">Selesai</button>`};
+ const dr=()=>{if(i>=c.qs.length){fin();return}const q=c.qs[i];CUR={s:q.q};
+  A.innerHTML=`<div class="pg">${i+1}/${c.qs.length} · <span id="st">⏱ 00:00</span>${c.qs.length<c.n?' · hanya '+c.qs.length+' soalan tersedia':''}</div><button class="btn alt sm" onclick="ex()">⬅ Keluar</button><div class="prompt" style="font-size:22px">${q.q} <button class="btn sm alt" onclick="sayL(CUR.s,'${c.s=='bi'?'en-US':'ms-MY'}')">🔊</button></div><div class="row">${q.o.map((x,j)=>`<button class="btn" style="font-size:18px" data-j="${j}">${x}</button>`).join('')}</div><div id="fb"></div>`;
+  A.querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>{const j=+b.dataset.j,r=j==q.a;if(r)ok++;else w.push(q);
+   if(c.mode=='u'){i++;dr();return}
+   A.querySelectorAll('[data-j]').forEach(x=>{x.disabled=true;if(+x.dataset.j==q.a)x.classList.add('done')});if(!r)b.classList.add('no');
+   $('#fb').innerHTML=`<p style="color:${r?'var(--ok)':'#c0504d'}">${r?'Betul!':'Belum betul.'} ${q.e}</p><button class="btn" id="nx2">Seterusnya ➜</button>`;say(r?'Betul':'Cuba lagi ya');$('#nx2').onclick=()=>{i++;dr()}})};
+ dr()}
+const ex=()=>{clearInterval(SS);tpc(CX.m,CX.s,CX.y)};
+function pv(){bk(0);A.innerHTML=kiki(U.pin?'Masukkan PIN ibu bapa atau guru.':'Tetapkan PIN 4 digit untuk paparan ini.')+`<div class="card"><input id="pn" type="password" inputmode="numeric" maxlength="4" placeholder="PIN 4 digit"><div id="er" class="er"></div><button class="btn" onclick="chk()">${U.pin?'Buka':'Simpan PIN'}</button><button class="btn alt" onclick="home()">Batal</button></div>`}
+function chk(){const v=$('#pn').value;if(!U.pin){if(!/^\d{4}$/.test(v)){$('#er').textContent='PIN mesti 4 digit.';return}U.pin=v;save();pd()}else if(v===U.pin)pd();else $('#er').textContent='PIN salah.'}
+function pd(){const ds=[],nd=[];for(const k in U.sc){const[m,s,y,i]=k.split('|'),t=TPS(m,s,+y)[+i];if(!t)continue;(U.sc[k].best>=80?ds:nd).push(`${SUB[m].find(x=>x[0]==s)[1]} T${y}: ${t.n}`)}
+ const rows=['srk','sra'].map(m=>SUB[m].filter(s=>!s[2]).map(s=>{const sc=Object.keys(U.sc).filter(k=>k.startsWith(m+'|'+s[0]+'|')).map(k=>U.sc[k].best||0);return`<tr><td>${s[1]}</td><td>${prog(m,s[0])}%</td><td>${Math.round((U.st[s[0]]||0)/60)} min</td><td>${sc.length?Math.max(...sc)+'%':'-'}</td></tr>`}).join('')).join('');
+ A.innerHTML=`<button class="btn alt sm" onclick="home()">⬅</button><div class="card" style="text-align:left"><h2>Laporan ${U.nick}</h2><p>Piala: ${U.r||0} 🏆</p><table style="width:100%;font-size:15px;text-align:left"><tr><th>Subjek</th><th>Siap</th><th>Masa</th><th>Terbaik</th></tr>${rows}</table><p><b>Dikuasai:</b> ${ds.join('; ')||'-'}</p><p><b>Perlu diulang kaji:</b> ${nd.join('; ')||'-'}</p></div><button class="btn" onclick="window.print()">Cetak</button><button class="btn alt" onclick="report()">Laporan Pra-Sekolah</button><button class="btn alt" onclick="cv()">Urus soalan (CSV)</button><button class="btn alt" onclick="rs()">Reset data sekolah</button>`}
+function csv(t){const r=[];let f='',row=[],q=0;t=t.replace(/^\uFEFF/,'');for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=0}else f+=c}else if(c=='"')q=1;else if(c==','){row.push(f);f=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);f='';if(row.some(x=>x.trim()))r.push(row);row=[]}else f+=c}row.push(f);if(row.some(x=>x.trim()))r.push(row);return r}
+function cv(){bk(0);const n=(DB.cq||[]).length,nm=Object.values(SUB).flat().filter(s=>!s[2]).map(s=>s[1]).join(', ');
+ A.innerHTML=`<button class="btn alt sm" onclick="pd()">⬅</button><div class="card" style="text-align:left"><h2>Urus soalan (CSV)</h2><p>Soalan import disimpan pada peranti ini dan tersedia untuk semua akaun di peranti ini. Jumlah soalan import: <b>${n}</b></p><input type="file" id="cf" accept=".csv,text/csv"><div id="cr"></div><p><b>Lajur (baris pertama ialah tajuk):</b></p><pre style="white-space:pre-wrap;font-size:13px">subjek,tahun,topik,subtopik,soalan,pilihan_a,pilihan_b,pilihan_c,pilihan_d,jawapan,penjelasan</pre><p class="pg">Subjek: ${nm}. Jawapan: A, B, C atau D. Pilihan C dan D boleh dikosongkan. Versi 2.0 memaparkan tahun 1.</p></div><button class="btn alt" onclick="cd()">Padam semua soalan import</button>`;
+ $('#cf').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>imp(String(r.result));r.readAsText(f,'UTF-8')}}
+function imp(t){const rows=csv(t).slice(1),ok=[],er=[],idx={};Object.keys(SUB).forEach(m=>SUB[m].forEach(s=>{idx[s[0]]=[m,s[0]];idx[s[1].toLowerCase()]=[m,s[0]]}));
+ const ex=new Set((DB.cq||[]).map(x=>[x.s,x.y,x.t,x.st,x.q].join('|')));
+ rows.forEach((r,i)=>{const L=i+2,sb=idx[(r[0]||'').trim().toLowerCase()],y=parseInt(r[1])||1,tp=(r[2]||'').trim(),st=(r[3]||'').trim(),q=(r[4]||'').trim(),o=[r[5],r[6],r[7],r[8]].map(x=>(x||'').trim()),ai='abcd'.indexOf((r[9]||'').trim().toLowerCase()),ops=o.filter(x=>x);
+  if(!sb)er.push(`Baris ${L}: subjek tidak dikenali`);else if(sb[0]=='sra'&&sb[1]=='jawi'||sb[1]=='fardhu')er.push(`Baris ${L}: subjek belum dibuka`);else if(!tp||!q)er.push(`Baris ${L}: topik atau soalan kosong`);else if(ops.length<2||ai<0||!o[ai])er.push(`Baris ${L}: pilihan atau jawapan tidak sah`);
+  else{const k=[sb[1],y,tp,st,q].join('|');if(ex.has(k))er.push(`Baris ${L}: soalan sudah wujud`);else{ex.add(k);ok.push({m:sb[0],s:sb[1],y,t:tp,st,q,o:ops,a:ops.indexOf(o[ai]),e:(r[10]||'').trim()||'Jawapan yang betul ialah '+o[ai]})}}});
+ DB.cq=(DB.cq||[]).concat(ok);save();$('#cr').innerHTML=`<p style="color:var(--ok)">${ok.length} soalan berjaya diimport.</p>${er.length?`<p class="er">${er.length} baris tidak diimport:<br>${er.slice(0,8).join('<br>')}</p>`:''}`}
+function cd(){A.innerHTML=kiki('Padam semua soalan import?')+'<p>Markah topik import juga akan dipadam.</p><button class="btn alt" onclick="cdo()">Ya, padam</button><button class="btn" onclick="cv()">Batal</button>'}
+function cdo(){const bc=(m,s,y)=>(BK[m+'|'+s+'|'+y]||[]).length+(s=='mat'?1:0);DB.cq=[];Object.values(DB.users).forEach(u=>{Object.keys(u.sc||{}).forEach(k=>{const[m,s,y,i]=k.split('|');if(+i>=bc(m,s,y))delete u.sc[k]})});save();cv()}
+function rs(){A.innerHTML=kiki('Padam data SRK dan SRA?')+'<button class="btn alt" onclick="U.sc={};U.st={};U.last=null;U.ls=null;save();pd()">Ya, reset</button><button class="btn" onclick="pd()">Batal</button>'}
+function drag(q,nx,i,n){let left=q.d.length,wr=0;
+ A.innerHTML=`${hd(i,n)}<div class="prompt">Seret gambar ke perkataan</div><div class="row">${SH(q.d).map(([h,w])=>`<div class="chip" data-w="${w}">${h}</div>`).join('')}</div><br><div class="row">${SH(q.d).map(([h,w])=>`<div class="slot" data-w="${w}">${w}</div>`).join('')}</div>`;say(q.s);
+ A.querySelectorAll('.chip').forEach(c=>{c.onpointerdown=e=>{e.preventDefault();c.setPointerCapture(e.pointerId);const sx=e.clientX,sy=e.clientY;c.style.zIndex=9;
+  c.onpointermove=m=>{c.style.transform=`translate(${m.clientX-sx}px,${m.clientY-sy}px)`};
+  c.onpointerup=m=>{c.onpointermove=c.onpointerup=null;c.style.pointerEvents='none';const t=document.elementFromPoint(m.clientX,m.clientY);c.style.pointerEvents='';const s=t&&t.closest('.slot'),w=c.dataset.w;
+   if(s&&s.dataset.w===w&&!s.classList.contains('ok')){s.classList.add('ok');s.innerHTML=c.innerHTML+' '+w;c.remove();rec(w,true);say(w);if(--left==0){sc(wr==0);setTimeout(nx,900)}}
+   else{c.style.transform='';c.style.zIndex='';wr++;rec(w,false);say('Cuba lagi ya, '+U.nick)}}}})}
+const ENG={mcq,eja,baca,tulis,drag};
+function report(){bk(0);const g=[],w=[];for(const k in U.s){const x=U.s[k];if(x.g>=2&&x.g>x.b)g.push(k);else if(x.b>0&&x.b>=x.g)w.push(k)}
+ const dn=Object.entries(U.p).map(([k,v])=>{const[l,t]=k.split(':');return`Tahap ${l} · ${TP.find(x=>x.id==t).n}: ${v} aktiviti siap`});
+ A.innerHTML=`<button class="btn alt sm" onclick="home()">⬅</button><div class="card"><h2>Laporan ${U.nick}</h2><p><b>Hadiah:</b> ${U.r||0} 🏆</p><p><b>Masa belajar:</b> ${Math.round(U.t/60)} minit</p><p><b>Sesi terkini:</b><br>${(U.l||[]).slice(-10).reverse().map(x=>`${x.n}: ${fm(x.d)}${x.sc?' · markah '+x.sc:''}${x.f?'':' (belum siap)'}`).join('<br>')||'Belum ada'}</p><p><b>Aktiviti siap:</b><br>${dn.join('<br>')||'Belum ada'}</p><p><b>Sudah dikuasai:</b> ${g.join(', ')||'-'}</p><p><b>Perlu latihan:</b> ${w.join(', ')||'-'}</p></div><button class="btn" onclick="window.print()">🖨️ Cetak</button><button class="btn alt" onclick="rr()">Reset Laporan</button>`}
+setInterval(()=>{if(U&&!document.hidden){U.t+=10;save()}},10000);
+login();
+</script></body></html>
